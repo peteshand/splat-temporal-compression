@@ -8,7 +8,8 @@
   },
   "scripts": {
     "start": "node src/cli.js",
-    "videos": "node src/cli.js --videos-only"
+    "videos": "node src/cli.js --videos-only",
+    "bundle": "node src/cli.js --bundle-only"
   },
   "dependencies": {
     "commander": "^12.1.0",

@@ -41,6 +41,12 @@ npm run videos -- --output ./output/test1
 
 When using `--videos-only`, the manifest is regenerated from existing `output/sog/*/meta.json` files.
 
+To only bundle the `videos/` folder into a single archive:
+
+```bash
+npm run bundle -- --output ./output/test1
+```
+
 This pipeline calls `splat-transform` with positional input/output, writing unbundled SOG to `sog/<name>/meta.json`.
 By default it uses `vendor/splat-transform/bin/cli.mjs` if present.
 
@@ -64,4 +70,5 @@ output/
   sog/            # per-.ply unbundled SOG outputs (original WebP preserved)
   sequences/      # per-attribute frame sequences (WebP copies)
   videos/         # per-attribute WebM + manifest.json bundle
+  bundle.sogt     # packaged videos bundle
 ```

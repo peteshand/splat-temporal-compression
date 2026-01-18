@@ -21,6 +21,7 @@ program
   .option('--fps <number>', 'Frame rate for output videos', parseNumber, 30)
   .option('--overwrite', 'Overwrite existing output directories', false)
   .option('--videos-only', 'Only encode videos from existing sequences', false)
+  .option('--bundle-only', 'Only bundle the videos folder into a zip archive', false)
   .parse(process.argv);
 
 const options = program.opts();
@@ -231,11 +232,44 @@ async function encodeSequenceToWebm({ sequenceDir, outputVideoPath, fps, crf, go
   });
 }
 
+async function bundleVideos({ videoRoot, outputDir }) {
+  if (!(await pathExists(videoRoot))) {
+    throw new Error(`Videos directory not found: ${videoRoot}`);
+  }
+
+  const zipExec = findExecutable('zip');
+  if (!zipExec) {
+    throw new Error('zip executable not found on PATH');
+  }
+
+  const outputZipPath = path.join(outputDir, 'bundle.sogt');
+  if (await pathExists(outputZipPath)) {
+    await fs.rm(outputZipPath, { force: true });
+  }
+
+  await new Promise((resolve, reject) => {
+    const child = spawn(zipExec, ['-r', outputZipPath, '.'], {
+      cwd: videoRoot,
+      stdio: 'inherit'
+    });
+    child.on('error', reject);
+    child.on('close', (code) => {
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error(`zip failed with exit code ${code}`));
+      }
+    });
+  });
+
+  return outputZipPath;
+}
+
 async function main() {
   const inputDir = options.input ? path.resolve(options.input) : null;
   const outputDir = path.resolve(options.output);
 
-  if (!options.videosOnly) {
+  if (!options.videosOnly && !options.bundleOnly) {
     if (!inputDir) {
       throw new Error('Input directory is required unless --videos-only is set');
     }
@@ -249,6 +283,12 @@ async function main() {
   const sogRoot = path.join(outputDir, 'sog');
   const sequenceRoot = path.join(outputDir, 'sequences');
   const videoRoot = path.join(outputDir, 'videos');
+
+  if (options.bundleOnly) {
+    const bundlePath = await bundleVideos({ videoRoot, outputDir });
+    console.log(`Bundle written to ${bundlePath}`);
+    return;
+  }
 
   if (!options.videosOnly && !options.overwrite) {
     for (const dir of [sogRoot, sequenceRoot, videoRoot]) {
@@ -406,6 +446,9 @@ async function main() {
     await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 2));
   }
   console.log(`Videos written to ${videoRoot}`);
+
+  const bundlePath = await bundleVideos({ videoRoot, outputDir });
+  console.log(`Bundle written to ${bundlePath}`);
 }
 
 main().catch((error) => {
