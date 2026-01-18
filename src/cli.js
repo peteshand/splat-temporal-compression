@@ -248,7 +248,7 @@ async function bundleVideos({ videoRoot, outputDir }) {
   }
 
   await new Promise((resolve, reject) => {
-    const child = spawn(zipExec, ['-r', outputZipPath, '.'], {
+    const child = spawn(zipExec, ['-r', outputZipPath, '.', '-x', '**/.DS_Store'], {
       cwd: videoRoot,
       stdio: 'inherit'
     });
