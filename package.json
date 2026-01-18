@@ -1,0 +1,17 @@
+{
+  "name": "splat-temporal-compression",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "splat-temporal": "src/cli.js"
+  },
+  "scripts": {
+    "start": "node src/cli.js",
+    "videos": "node src/cli.js --videos-only"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "fluent-ffmpeg": "^2.1.2"
+  }
+}
